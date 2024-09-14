@@ -10,6 +10,6 @@ var User = new Schema({
         versionKey: false //here
 })
 
-const Data = mongoose.model("Data", User)
+const userData = mongoose.model("userData", User)
 
-module.exports = Data
+module.exports = userData
