@@ -1,16 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const path = require('path');
-var User = require('../models/userSchema')
+var mongoose = require('mongoose');
+var User = require('../models/User')
 
 router.get('/getUser/', async (req, res) => {
     var fetchid = req.get("appleId")
     console.log("fetching user ID: " + fetchid)
 
     try {
-        const user = await User.findOne({appleId: fetchid})
+        const user = await User.findOne({appleId: fetchid}).exec();
         console.log("Application ID: " + user._id, "Apple ID: " + user.appleId, "FN: " + user.firstName, "LN: " + user.lastName, "email: " + user.email)
         console.log("User " + user)
+
+        
+
         res.send(user)
     } catch(exception){
         console.log(exception)
@@ -93,25 +96,23 @@ router.post('/updateUser/', async (req, res) => {
 
 //CREATE A USER
 //POST REQUEST
-router.post("/addUser", (req, res) => {
+router.post("/addUser", async (req, res) => {
 
-    var user = new User ({
+try {
+    const result = await User.create({
+        _id: new mongoose.Types.ObjectId(),
         appleId: req.get("appleId"),
         firstName: req.get("firstName"),
         lastName: req.get("lastName"),
-        email: req.get("email")
+        email: req.get("email"),
+        bands: []
     })
-
-    console.log("AppleID: " + user.appleId, "FN: " + user.firstName, "LN: " + user.lastName, "email: " + user.email)
-    user.save().then(() => {
-        if(user.isNew == false){
-            console.log("Saved Data!")
-            res.send("Saved user " + user.appleId)
-
-        } else {
-            console.log("failed to save data")
-        }
-    })
+        console.log("RESULT: " + result);
+        res.status(201).send("Saved user " + result);
+    } catch (err) {
+        console.log(err.message)
+        res.status(500).send("User not saved!");
+    }
 })
 
 module.exports = router;

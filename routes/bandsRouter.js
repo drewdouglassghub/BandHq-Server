@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const path = require('path');
-var Band = require('../models/bandSchema');
+var mongoose = require('mongoose');
+var Band = require('../models/Band');
 
 // fetch all users
 router.get('/fetch', (req, res) => {
@@ -19,7 +19,7 @@ router.get('/getBand/', async (req, res) => {
     try {
         const band = await Band.findOne({_id: fetchid})
         console.log("Application ID: " + band._id, "BN: " + band.bandName, "LN: "
-             + band.bandMates, "email: " + band.email)
+             + band.members, "email: " + band.email)
         console.log("Band " + band)
         res.send(band)
     } catch(exception){
@@ -29,23 +29,21 @@ router.get('/getBand/', async (req, res) => {
 }) 
 
 //Create BAND - POST 
-router.post("/addBand", (req, res) => {
-    var band = new Band ({
-        bandName: req.get("bandName"),
-        bandMates: req.get("bandMates"),
-        email: req.get("email")
-    })
-
-    console.log("BN: " + band.bandName, "BM: " + band.bandMates, "email: " + band.email)
-    band.save().then(() => {
-        if(band.isNew == false){
-            console.log("Saved Data!")
-            res.send("Saved band " + band._id)
-
-        } else {
-            console.log("failed to save data")
-        }
-    })
+router.post("/addBand", async (req, res) => {
+    
+    try {
+        const result = await Band.create({
+            _id: new mongoose.Types.ObjectId(),
+            bandName: req.get("bandName"),
+            members: req.get("members"),
+            email: req.get("email")
+        })
+        console.log("RESULT: " + result);
+        res.status(201).send("Saved user " + result);
+    } catch (err) {
+        console.log(err.message)
+        res.status(500).send("Band not saved!");
+    }
 })
 
 module.exports = router;
