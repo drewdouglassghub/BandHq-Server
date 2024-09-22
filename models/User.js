@@ -10,6 +10,7 @@ var userSchema = new Schema({
     appleId: {
         type: String,
         required: true,
+        unique: true 
     },
     firstName: {
         type: String,
@@ -21,7 +22,8 @@ var userSchema = new Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     bands: [{ type: Schema.Types.ObjectId, ref: 'Band', required: false }]
 })

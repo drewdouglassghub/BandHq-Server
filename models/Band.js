@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+const User = require("./User");
 
 var bandSchema = new Schema({
     _id: {
@@ -16,6 +17,7 @@ var bandSchema = new Schema({
     },
     members: [{ type: Schema.Types.ObjectId, ref: 'User', required: false }]
 });
+
 
 const bandData = mongoose.model('Band', bandSchema);
 
