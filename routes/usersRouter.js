@@ -40,23 +40,11 @@ router.get('/fetch', (req, res) => {
 router.post('/deleteById/', async (req, res) => {
     deleteid = req.get("id")
     console.log("Deleting ID: " + deleteid)
-    try {
-        var currentUser = await User.findById(deleteid)
-        console.log('user bands: ' + user.bands)
-        for(i=0; i > currentUser.bands.length; i++){
-            console.log("band: " + currentUser.bands.i.bandName)
-        }
-
         try {
             await User.findByIdAndDelete({_id: deleteid})
         } catch (err) {
             console.log(err)
         }
-      } catch (err) {
-          console.log(err.message)
-          res.status(500).send("Band loop not working");
-      }           
-
     
     //const user = await User.findById({id: deleteid}).exec
     //User.deleteOne(user)
@@ -170,21 +158,19 @@ router.post('/deleteUserFromBand/', async (req, res) => {
         { 
           $pull: { "members": userId}
         })
-         res.status(201).send('User removed from band')
+            try {
+                const user = await User.updateOne( { _id: userId},
+                { 
+                  $pull: { "bands": bandId}
+                })    
+                res.status(201).send('Band deleted from user.');         
+            } catch (err) {
+                res.status(500).send('Failed to drop band from user' + err);
+            }   
     } catch (err) {
-        console.log("failed to drop user from band " + err)
+        console.log("Failed to drop user from band " + err)
         res.status(500).send("Nope")
     }
-    // deleteid = req.get("id")
-    // console.log("Deleting User " + deleteid + " from band: " + bandId)
-    // try {
-    //     await User.findByIdAndDelete({_id: deleteid})
-    // } catch (err) {
-    //     console.log(err)
-    // }
-    // //const user = await User.findById({id: deleteid}).exec
-    // //User.deleteOne(user)
-    // return res.send("Deleted ID: " + deleteid)  
 })
 
 module.exports = router;

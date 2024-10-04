@@ -1,6 +1,7 @@
 var mongoose = require("mongoose")
 var Schema = mongoose.Schema
 const Band = require("./Band");
+const Image = require("./Image");
 
 var userSchema = new Schema({
     _id: {
@@ -25,9 +26,8 @@ var userSchema = new Schema({
         required: true,
         unique: true
     },
-    bands: [{ type: Schema.Types.ObjectId, ref: 'Band', required: false }]
+    bands: [{ type: Schema.Types.ObjectId, ref: 'Band', required: false}]
 })
 
 const userData = mongoose.model("User", userSchema)
-
 module.exports = userData

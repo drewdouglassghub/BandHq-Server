@@ -3,6 +3,7 @@ const router = express.Router();
 var mongoose = require('mongoose');
 var Band = require('../models/Band');
 var User = require('../models/User');
+const { ObjectId } = mongoose.Types;
 
 // fetch all users
 router.get('/fetch', (req, res) => {
@@ -20,8 +21,8 @@ router.get('/getBand/', async (req, res) => {
     try {
         const band = await Band.findOne({_id: fetchid})
         .populate({ 
-            path: 'bands',
-            model: 'Band'
+            path: 'members',
+            model: 'User'
          })
          .exec();
         console.log("Band ID: " + band._id, "BN: " + band.bandName, "Members: "
@@ -35,25 +36,27 @@ router.get('/getBand/', async (req, res) => {
 }) 
 
 //Create BAND - POST 
+// bandName, members(includes creator ID), email
 router.post("/addBand", async (req, res) => {
     //create the band
     try {
         const result = await Band.create({
             _id: new mongoose.Types.ObjectId(),
             bandName: req.get("bandName"),
-            members: req.get("members"),
+            members: ObjectId.createFromHexString(req.get("members")),
             email: req.get("email")
         })
             console.log("RESULT: " + result);
-            const fetchid = result.get("members")
-            console.log("ID: " + fetchid[0])
-
+            const fetchid = result.members[0]
+            console.log("ID: " + fetchid)
             //update user.bands with new band they created
         try {
-            var currentUser = await User.findById(fetchid)
-            currentUser.bands.push(result)
-            await currentUser.save()
-                  res.status(201).send("Saved Band " + result);
+            var currentUser = await User.updateOne({ _id: fetchid },
+            {
+                $push: { "bands": result }
+            })
+                // await currentUser.save()
+                  res.status(201).send(result);
           } catch (err) {
               console.log(err.message)
               res.status(500).send("User not updated!");
@@ -99,8 +102,37 @@ router.post("/addUserToBand", async (req, res) => {
              + result.members, "email: " + result.email)
         console.log("Band " + result)
         res.send(band)
-    
-
 })
 
+//GET USER_BANDS
+//getUserBands
+router.get('/getUserBandsByAppleId/', async (req, res) => {
+    
+    var fetchid = req.get("appleId")
+    console.log("fetching user ID: " + fetchid)
+
+    try {
+        const user = await User.findOne({appleId: fetchid})
+        //console.log("Application ID: " + user._id, "Apple ID: " + user.appleId, "FN: " + user.firstName, "LN: " + user.lastName, "email: " + user.email)
+        // .populate({ 
+        //         path: 'bands',
+        //         model: 'Band'
+        //      })
+         .exec();
+
+    bands = [];
+    console.log('fetching user bands for: ' + user._id);
+    try {
+            const bands = await Band.find( { members: { $in: [user._id]}});
+            console.log("Bands: " + bands);
+            res.status(201).send(bands);
+        } catch {
+            console.log("bands not found!");
+            res.status(500).send("bands not found!");
+        }
+    }catch (err) {
+        console.log("Error! " + err)
+        res.status(500).send(err);
+    }
+})
 module.exports = router;

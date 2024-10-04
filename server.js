@@ -15,6 +15,8 @@ var server = app.listen(8081, "192.168.4.32", () => {
 
 var usersRouter = require('./routes/usersRouter.js');
 var bandsRouter = require('./routes/bandsRouter.js');
+var listsRouter = require('./routes/listsRouter.js');
 
 app.use('/users', usersRouter);
 app.use('/bands', bandsRouter);
+app.use('/lists', listsRouter);
